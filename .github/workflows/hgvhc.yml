@@ -1,0 +1,22 @@
+name: fmndsfdmnd
+
+on:
+  workflow_dispatch:
+    inputs:
+      search_term:
+        description: 'Enter'
+        required: true
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Search for input string
+        run: |
+          echo "Searching for '${{ github.event.inputs.search_term }}'..."
+          grep -rnw . -e "${{ github.event.inputs.search_term }}" || echo "No matches found."
+          
