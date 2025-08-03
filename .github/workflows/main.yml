@@ -1,0 +1,68 @@
+name: build-20
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: "Build for veux"
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set Timezone
+        uses: szenius/set-timezone@v2.0
+        with:
+          timezoneLinux: "Asia/Kolkata"
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install bison flex libssl-dev libarchive-tools bc libelf-dev dwarves -y
+
+      - name: Cache Clang toolchain
+        uses: actions/cache@v4
+        id: clang-cache
+        with:
+          path: toolchain
+          key: clang-r547379
+
+      - name: Setup Clang toolchain
+        if: steps.clang-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p toolchain
+          cd toolchain
+          echo 'Downloading AOSP Clang 20...'
+          wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r547379.tar.gz -O clang.tar.gz
+          tar -xvf clang.tar.gz
+          rm clang.tar.gz
+          echo 'Clang toolchain ready'
+
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 30
+
+      - name: Build kernel
+        run: |
+          chmod +x build.sh
+          ./build.sh -c
+
+      - name: Upload kernel zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-${{ github.run_number }}
+          path: AnyKernel3/build.zip
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log-${{ github.run_number }}
+          path: |
+            build.log
+            AnyKernel3/config
