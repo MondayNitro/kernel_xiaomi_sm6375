@@ -5,7 +5,7 @@ set -eE
 trap 'catch $? $LINENO' ERR
 
 catch() {
-    echo -e "\❌ Build failed at line $2 with exit code $1\"
+    echo -e "❌ Build failed at line $2 with exit code $1"
     echo "Saving log and exiting gracefully..."
     exit $1
 }
@@ -77,4 +77,4 @@ cp out/arch/arm64/boot/dtbo.img ${AnyKernel3}/dtbo.img
 # Zip
 cd ${AnyKernel3}
 zip -r9 build.zip * -x .git README.md *placeholder
-echo -e "✅ Build completed successfully!\"
+echo -e "✅ Build completed successfully!"
